@@ -232,8 +232,10 @@ class CurlMulti extends AbstractHasDispatcher implements CurlMultiInterface
     private function executeHandles()
     {
         // The first curl_multi_select often times out no matter what, but is usually required for fast transfers
+        $timeout = 30;
         $selectTimeout = 0.001;
         $active = false;
+        $start = time();
         do {
             while (($mrc = curl_multi_exec($this->multiHandle, $active)) == CURLM_CALL_MULTI_PERFORM);
             $this->checkCurlResult($mrc);
@@ -243,7 +245,7 @@ class CurlMulti extends AbstractHasDispatcher implements CurlMultiInterface
                 usleep(150);
             }
             $selectTimeout = $this->selectTimeout;
-        } while ($active);
+        } while ($active && ((time() - $start) > $timeout));
     }
 
     /**
